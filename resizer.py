@@ -15,29 +15,54 @@ class Resize():
         outFile = self.imageObject.resize(dimensions, Image.ANTIALIAS)
         return outFile
 
+    def aspectResize(self, dimensions):
+        aspectRatio = dimensions[0] / dimensions[1]
+        if aspectRatio == self.aspectRatio:
+            outFile = self.imageObject.resize(dimensions, Image.ANTIALIAS)
+            return outFile
+        else:
+            print("\nThe given dimensions do not match the aspect ratio of the original image.")
+            option = input("Do you want to force resize it?(Y/N): ").lower()
+            if option == 'y':
+                return 'y'
+
+
+def print_properties(text, size):
+    print("\nProperties of the {} image: ".format(text))
+    print("\tSize: ", size)
+    print("\tAspect ratio: ", Fraction(size[0], size[1]), "~", round(size[0] / size[1], 2))
+
 
 def main(args):
+    """
+    Driver Code
+    """
     imgPath = 'D:\\Images\\Wallpapers\\Desktop Wallpapers\\macOS\\MBA2020.png'
-    imgObject = Image.open(imgPath)
-    originalSize = imgObject.size
+    imgFile = Image.open(imgPath)
+    imgObject = Resize(imgFile)
+    outFile = None
+    originalSize = imgFile.size
 
     #  Printing properties of the original image
-    print("\nOriginal image properties: ")
-    print("\tSize: ", originalSize)
-    print("\tAspect ratio: ", Fraction(originalSize[0], originalSize[1]), "~", round(originalSize[0] / originalSize[1], 2))
+    print_properties('original', originalSize)
     
     if args.force:
-        outFile = Resize(imgObject).forceResize((1920, 1080))
-        newSize = outFile.size
-        outFile.show()
+        outFile = imgObject.forceResize((1920, 1080))
 
-    # Printing properties of the resized image
-    print("\nResized image properties: ")
-    print("\tSize: ", newSize)
-    print("\tAspect ratio: ", Fraction(newSize[0], newSize[1]), "~", round(newSize[0]/newSize[1], 2))
+    elif args.aspect:
+        outFile = imgObject.aspectResize((1920, 1080))
+        if outFile == 'y':
+            outFile = imgObject.forceResize((1920, 1080))
+
+    if outFile != None:
+        outFile.show()
+        # Printing properties of the resized image
+        newSize = outFile.size
+        print_properties('resized', newSize)
+
 
 if __name__ == "__main__":
-    
+
     # Parsing command line args
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', metavar='dimensions', type=tuple, dest='size', help='The desired dimensions in pixels as a tuple: (w, h).')
