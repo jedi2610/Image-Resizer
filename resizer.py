@@ -1,4 +1,5 @@
 import os
+import time
 import argparse
 from glob import glob
 from pathlib import Path
@@ -37,13 +38,15 @@ class Resize():
 
 
 def print_properties(text, size):
-    # Print the image properties
+
+    # Print the image properties using the given arguments
     print("\nProperties of the {}: ".format(text))
     print("\tSize:", size)
     print("\tAspect ratio:", Fraction(size[0], size[1]), "~", round(size[0] / size[1], 2))
 
 def print_exit():
-    # Prints a message if an error occurs
+
+    # Prints this message if an error occurs
     print("\nIf you have a problem, file an issue in the repository with all the details.")
     print("Link to the repository: https://github.com/jedi2610/Image-Resizer")
 
@@ -51,11 +54,15 @@ def main(args):
     """
     Driver Code
     """
+    # Initializing some variables
+    startTime = time.time()
+    totalCount = 0
     imgExtensions = ['.png', '.jpg', '.jpeg', '.ppm', '.tiff', '.bmp']
     if args.force == True:
             args.aspect = False
     size = tuple(args.size)
     imageFilePaths = list()
+    isdir = False
     
     # Check if the given dimensions are valid
     if len(size) != 2:
@@ -69,9 +76,12 @@ def main(args):
             imageFilePaths.append(args.input)
         else:
             print("Error. The given file is not an image.")
+            print_exit()
+            exit(1)
 
     elif os.path.isdir(args.input):
         # Gets the path of all the image files in a given directory (sub-directories included)
+        isdir = True
         for extensions in imgExtensions:
             imageFilePaths += glob('{}\\**/*{}'.format(args.input, extensions), recursive=True)
 
@@ -134,11 +144,12 @@ def main(args):
 
             # outFile.show()
             # Saving the resized image
-            if args.output:
+            if args.output and not isdir:
                 # TODO implement this method if the given path is a folder
                 try:
                     outFile.save(args.output, fileFormat)
                     print("\nThe image is resized and saved at: \"" + args.output + "\"")
+                    totalCount += 1
                 except IOError:
                     print("\nAn error occured while saving the resized image. Check if the given path exists.")
                     print_exit()
@@ -149,14 +160,20 @@ def main(args):
                 try:
                     outFile.save(outPath, fileFormat)
                     print("\nThe image is resized and saved at: \"" + outPath + "\"")
+                    totalCount += 1
                 except IOError:
                     print("\nAn error occured while saving the resized image")
                     print_exit()
                     continue
 
                 print('------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+        print("\nTotal files resized: ", totalCount)
+        print("Time taken: ", time.time - startTime)
+
     except KeyboardInterrupt:
         print("\nProcess terminated.")
+        print("\nTotal files resized: ", totalCount)
+        print("Time taken: ", time.time - startTime)
         exit(0)
 
 
@@ -164,11 +181,15 @@ if __name__ == "__main__":
 
     # Parsing command line args
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', type=str, help='Path of the input file.')
+    parser.add_argument('input', type=str, help='Path of the input file/folder.')
     parser.add_argument('size', nargs='+', type=int, help='The desired dimensions in pixels as a tuple: (w, h).')
     parser.add_argument('-a', '--aspect', action='store_true', default=True, dest='aspect', help='Forces to stick with the aspect ratio of the original image.[Default = True]')
     parser.add_argument('-f', '--force', action='store_true', dest='force', help='Force resize the image even if the given dimensions are not on par with the original image dimensions.')
     parser.add_argument('-o', '--output', dest='output', type=str, help='Path of the output file without extension.')
     args = parser.parse_args()
 
+    # TODO add banners
+    # TODO clear up the -o tag working for directories
+    # TODO print resizing info only if a tag is tagged
+    
     main(args)
