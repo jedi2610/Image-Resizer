@@ -167,13 +167,13 @@ def main(args):
                     continue
 
                 print('------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-        print("\nTotal files resized: ", totalCount)
-        print("Time taken: ", time.time - startTime)
+        print("\nTotal files resized:", totalCount)
+        print("Time taken:", time.time() - startTime, "seconds")
 
     except KeyboardInterrupt:
         print("\nProcess terminated.")
         print("\nTotal files resized: ", totalCount)
-        print("Time taken: ", time.time - startTime)
+        print("Time taken: ", time.time() - startTime, "seconds")
         exit(0)
 
 
